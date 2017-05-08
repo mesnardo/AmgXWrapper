@@ -30,7 +30,6 @@ class StructArgs
                             optFileName[MAX_LEN], // output file
                             matrixFileName[MAX_LEN], // output file
                             rhsFileName[MAX_LEN], // output file
-                            exactFileName[MAX_LEN],  // output file
                             caseName[MAX_LEN];    // case name
 
         void print()
@@ -40,7 +39,6 @@ class StructArgs
             std::cout << "Config File: " << cfgFileName << std::endl;
             std::cout << "Matrix File: " << matrixFileName << std::endl;
             std::cout << "RHS File: " << rhsFileName << std::endl;
-            std::cout << "Exact Solution File: " << exactFileName << std::endl;
             std::cout << "Number of Solves: " << Nruns << std::endl;
 
             std::cout << "Output PETSc Log File ? " << optFileBool << std::endl;
@@ -72,8 +70,6 @@ class StructArgs
                         "\t-matrixFileName [file for matrix]\n");            CHK;
                 ierr = PetscPrintf(PETSC_COMM_WORLD, 
                         "\t-rhsFileName [file for RHS vector]\n");           CHK;
-                ierr = PetscPrintf(PETSC_COMM_WORLD, 
-                        "\t-exactFileName [file for exact solution vector]\n"); CHK;
 
                 ierr = PetscPrintf(PETSC_COMM_WORLD, "\n");                  CHK;
 
@@ -121,10 +117,6 @@ class StructArgs
             ierr = PetscOptionsGetString(nullptr, nullptr, "-rhsFileName", 
                     rhsFileName, MAX_LEN, &set);                             CHK;
             CHKMSG(set, "rhsFileName (binary matrix file) not yet set!");
-
-            ierr = PetscOptionsGetString(nullptr, nullptr, "-exactFileName", 
-                    exactFileName, MAX_LEN, &set);                           CHK;
-            CHKMSG(set, "exactFileName (binary matrix file) not yet set!");
 
             ierr = PetscOptionsGetInt(nullptr, nullptr, 
                     "-Nruns", &Nruns, &set);                                 CHK;

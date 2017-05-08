@@ -7,7 +7,7 @@
  */
 # include "headers.hpp"
 
-static std::string help = "Test PETSc and AmgX solvers.";
+static std::string help = "Test PETSc solver.";
 
 int main(int argc, char **argv)
 {
@@ -22,8 +22,6 @@ int main(int argc, char **argv)
     Mat                 A;      // coefficient matrix
 
     KSP                 ksp;    // PETSc KSP solver instance
-
-    AmgXSolver          amgx;   // AmgX wrapper instance
 
     PetscErrorCode      ierr;   // error codes returned by PETSc routines
 
@@ -80,10 +78,6 @@ int main(int argc, char **argv)
     // create vector rhs and load from file
     ierr = readVec(rhs, args.rhsFileName, "RHS");                            CHK;
 
-    // create vector u_exact and load from file
-    ierr = readVec(u_exact, args.exactFileName, "exact solution");           CHK;
-
-
     // create vectors u and set to zeros
     {
         ierr = VecDuplicate(rhs, &u);                                        CHK;
@@ -106,39 +100,13 @@ int main(int argc, char **argv)
     ierr = PetscLogEventRegister("WarmUp", warmUpID, &warmUpEvent);          CHK;
 
     // create a solver and solve based whether it is AmgX or PETSc
-    if (std::strcmp(args.mode, "PETSc") == 0) // PETSc mode
-    {
-        ierr = createKSP(ksp, A, args.cfgFileName);                          CHK;
+    ierr = createKSP(ksp, A, args.cfgFileName);                          CHK;
 
-        ierr = solve(ksp, A, u, rhs, u_exact, err, 
-                args, warmUpEvent, solvingEvent);                            CHK;
+    ierr = solve(ksp, A, u, rhs, err, 
+            args, warmUpEvent, solvingEvent);                            CHK;
 
-        // destroy KSP
-        ierr = KSPDestroy(&ksp);                                             CHK;
-
-    }
-    else // AmgX mode
-    {
-        if (std::strcmp(args.mode, "AmgX") == 0) // AmgX GPU mode
-            amgx.initialize(PETSC_COMM_WORLD, "dDDI", args.cfgFileName);
-        else // AmgX CPU mode (not yet implemented in the wrapper) and other mode
-        {   
-            std::cerr << "Invalid mode." << std::endl;
-            exit(EXIT_FAILURE);
-        }
-
-
-        ierr = MPI_Barrier(PETSC_COMM_WORLD);                                CHK;
-        amgx.setA(A);
-
-        ierr = solve(amgx, A, u, rhs, u_exact, err, 
-                args, warmUpEvent, solvingEvent);                            CHK;
-
-        // destroy solver
-        ierr = amgx.finalize();                                              CHK;
-
-    }
-
+    // destroy KSP
+    ierr = KSPDestroy(&ksp);                                             CHK;
 
     // output a file for petsc performance
     if (args.optFileBool == PETSC_TRUE)
@@ -158,7 +126,6 @@ int main(int argc, char **argv)
     {
         ierr = VecDestroy(&u);                                               CHK;
         ierr = VecDestroy(&rhs);                                             CHK;
-        ierr = VecDestroy(&u_exact);                                         CHK;
         ierr = VecDestroy(&err);                                             CHK;
 
         ierr = MatDestroy(&A);                                               CHK;
