@@ -82,85 +82,6 @@ IF(${PETSc_FOUND})
 ENDIF()
 
 
-
-MESSAGE("\n===================================================================")
-MESSAGE("Trying to find AmgX...")
-MESSAGE("\nNOTE: If it fails to find AmgX, please set the environment variable")
-MESSAGE("AMGX_DIR in order to notify CMake the location of AmgX\n")
-
-
-MESSAGE("-- Finding amgx_c.h")
-FIND_PATH(AMGX_INCLUDE_DIRS 
-          NAMES amgx_c.h  
-          PATHS ${AMGX_DIR} $ENV{AMGX_DIR} 
-          PATH_SUFFIXES "include")
-
-IF(${AMGX_INCLUDE_DIRS} STREQUAL "AMGX_INCLUDE_DIRS-NOTFOUND")
-    MESSAGE(FATAL_ERROR "Could not find amgx_c.h!!!")
-ELSE()
-    MESSAGE("-- Finding amgx_c.h - found in " ${AMGX_INCLUDE_DIRS})
-ENDIF()
-
-
-MESSAGE("-- Finding amgx_capi.h")
-FIND_FILE(AMGX_CAPI_FOUND 
-          NAMES amgx_capi.h 
-          PATHS ${AMGX_INCLUDE_DIRS} 
-          NO_DEFAULT_PATH)
-
-IF(${AMGX_CAPI_FOUND} STREQUAL "AMGX_CAPI_FOUND-NOTFOUND")
-    MESSAGE(FATAL_ERROR "amgx_capi.h was not found in: " ${AMGX_INCLUDE_DIRS})
-ELSE()
-    MESSAGE("-- Finding amgx_capi.h - found")
-ENDIF()
-
-
-MESSAGE("-- Finding amgx_config.h")
-FIND_FILE(AMGX_CONFIG_FOUND 
-          NAMES amgx_config.h 
-          PATHS ${AMGX_INCLUDE_DIRS} 
-          NO_DEFAULT_PATH)
-
-IF(${AMGX_CONFIG_FOUND} STREQUAL "AMGX_CONFIG_FOUND-NOTFOUND")
-    MESSAGE(FATAL_ERROR "amgx_config.h was not found in: " ${AMGX_INCLUDE_DIRS})
-ELSE()
-    MESSAGE("-- Finding amgx_config.h - found")
-ENDIF()
-
-
-MESSAGE("-- Finding libamgxsh.so")
-FIND_LIBRARY(AMGX_LIBRARIES
-             NAMES amgxsh
-             PATHS ${AMGX_DIR} $ENV{AMGX_DIR}
-             PATH_SUFFIXES "lib")
-
-IF(${AMGX_LIBRARIES} STREQUAL "AMGX_LIBRARIES-NOTFOUND")
-    MESSAGE(FATAL_ERROR "libamgxsh.so was not found")
-ELSE()
-    MESSAGE("-- Finding libamgxsh.so - found: " ${AMGX_LIBRARIES})
-ENDIF()
-
-
-
-MESSAGE("\n===================================================================")
-MESSAGE("Trying to find CUDA 6.5...")
-MESSAGE("\nNOTE: If you have several different versions of CUDA, and if CMake ")
-MESSAGE("can not find CUDA 6.5, please define CUDA_TOOLKIT_ROOT_DIR manually ")
-MESSAGE("when calling CMake. For example:") 
-MESSAGE("\n\t$ cmake . -DCUDA_TOOLKIT_ROOT_DIR=/opt/cuda65\n")
-
-FIND_PACKAGE(CUDA 6.5 EXACT REQUIRED)
-
-IF(${CUDA_FOUND})
-    SET(CUDA_LIBRARY_DIRS ${CUDA_TOOLKIT_ROOT_DIR}/lib64)
-    MESSAGE("\tCUDA_TOOLKIT_ROOT_DIR: " ${CUDA_TOOLKIT_ROOT_DIR})
-    MESSAGE("\tCUDA_VERSION: " ${CUDA_VERSION_STRING})
-    MESSAGE("\tCUDA_INCLUDE_DIRS: " ${CUDA_INCLUDE_DIRS})
-    MESSAGE("\tCUDA_LIBRARY_DIRS: " ${CUDA_LIBRARY_DIRS})
-    MESSAGE("\tCUDA_LIBRARIES: " ${CUDA_LIBRARIES})
-ENDIF()
-
-
 MESSAGE("\n===================================================================")
 MESSAGE("Setting the information for target and source files...")
 
@@ -176,26 +97,18 @@ SET(SOURCE
     ${SRC}/generateExt.cpp
     ${SRC}/createKSP.cpp
     ${SRC}/solve.cpp
-    ${SRC}/applyNeumannBC.cpp
-    ${AmgXWrapperSRC}/AmgXSolver.cpp)
+    ${SRC}/applyNeumannBC.cpp)
 
 INCLUDE_DIRECTORIES(
-    ${PETSC_INCLUDES} 
-    ${AMGX_INCLUDE_DIRS} 
-    ${CUDA_INCLUDE_DIRS} 
-    ${AmgXWrapperSRC})
+    ${PETSC_INCLUDES})
 
 LINK_DIRECTORIES(
-    ${CUDA_LIBRARY_DIRS} 
-    ${AMGX_LIBRARY_DIRS}
     ${PETSC_LIBRARY_DIRS})
 
 ADD_EXECUTABLE(Poisson ${SOURCE})
 
 TARGET_LINK_LIBRARIES(Poisson 
-    ${PETSC_LIBRARIES} 
-    ${AMGX_LIBRARIES} 
-    ${CUDA_LIBRARIES})
+    ${PETSC_LIBRARIES})
 
 ADD_CUSTOM_COMMAND(
     TARGET Poisson

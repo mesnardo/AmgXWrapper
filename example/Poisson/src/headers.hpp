@@ -20,7 +20,6 @@
 # include <petscdmda.h>
 
 # include "StructArgs.hpp"
-# include "AmgXSolver.hpp"
 
 
 # define CHK CHKERRQ(ierr)
@@ -61,9 +60,6 @@ PetscErrorCode generateA(const DM &grid,
 PetscErrorCode createKSP(KSP &ksp, Mat &A, DM &grid, char *FN);
 
 PetscErrorCode solve(KSP &ksp, Mat &A, Vec &u, Vec &rhs, Vec &u_exact, Vec &err,
-        StructArgs &args, PetscLogEvent &warmUpEvent, PetscLogEvent &solvingEvent);
-
-PetscErrorCode solve(AmgXSolver &amgx, Mat &A, Vec &u, Vec &rhs, Vec &u_exact, Vec &err,
         StructArgs &args, PetscLogEvent &warmUpEvent, PetscLogEvent &solvingEvent);
 
 PetscErrorCode applyNeumannBC(Mat &A, Vec &RHS, const Vec &exact);
