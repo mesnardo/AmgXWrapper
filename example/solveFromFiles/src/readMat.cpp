@@ -17,6 +17,13 @@ PetscErrorCode readMat(Mat &mat, char *FN, const char *name)
 
     ierr = MatLoad(mat, reader);                                             CHK;
 
+    // Set the first row of the Poisson matrix to zero (except diagonal element)
+    // to fix the pressure at the bottom-left corner of the domain
+    // This is done to deal with the null space of the Poisson matrix when using
+    // AmgX solver
+    PetscInt idx = 0;
+    ierr = MatZeroRows(mat, 1, &idx, 1.0, PETSC_NULL, PETSC_NULL);           CHK;
+
     ierr = PetscViewerDestroy(&reader);                                      CHK;
 
     // get and print matrix information

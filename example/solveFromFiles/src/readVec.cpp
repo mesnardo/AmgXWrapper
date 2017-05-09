@@ -13,6 +13,10 @@ PetscErrorCode readVec(Vec &vec, char *FN, const char *name)
             FN, FILE_MODE_READ, &reader);                                    CHK;
 
     ierr = VecLoad(vec, reader);                                             CHK;
+    // set first entry to zero to pin the value and remove the nullspace
+    ierr = VecSetValue(vec, 0, 0.0, INSERT_VALUES);                          CHK;
+    ierr = VecAssemblyBegin(vec);                                            CHK;
+    ierr = VecAssemblyEnd(vec);                                              CHK;
 
     ierr = PetscViewerDestroy(&reader);                                      CHK;
 
